@@ -34,15 +34,36 @@ def load_model():
 
 def preprocess_image(uploaded_file):
     img = Image.open(uploaded_file).convert("RGB")
-    display_img = img.copy()
     img_resized = img.resize(IMAGE_SIZE)
     img_array = np.array(img_resized, dtype=np.float32)
     img_array = np.expand_dims(img_array, axis=0)
-    return display_img, img_array
+    return img_array
 
+
+st.markdown(
+    """
+    <style>
+    div.stButton > button:first-child {
+        background-color: #ef4444;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+    }
+    div.stButton > button:first-child:hover {
+        background-color: #dc2626;
+        color: white;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
 st.title("Klasifikasi Jenis Mangrove")
-st.write("Upload gambar, lalu sistem akan memprediksi kelas mangrove menggunakan model MobileNetV3Large input 250x250.")
+st.write(
+    "Upload gambar, lalu sistem akan memprediksi kelas mangrove menggunakan model MobileNetV3Large input 250x250."
+)
 
 try:
     model = load_model()
@@ -50,18 +71,29 @@ except Exception as e:
     st.error(f"Model gagal dimuat: {e}")
     st.stop()
 
-uploaded_file = st.file_uploader("Pilih gambar", type=["jpg", "jpeg", "png", "bmp", "webp"])
+uploaded_file = st.file_uploader(
+    "Pilih gambar",
+    type=["jpg", "jpeg", "png", "bmp", "webp"]
+)
 
 if uploaded_file is not None:
-    image, image_array = preprocess_image(uploaded_file)
+    image_array = preprocess_image(uploaded_file)
     st.write("Gambar berhasil diupload.")
 
     if st.button("Prediksi", type="primary"):
         with st.spinner("Memproses prediksi..."):
             predictions = model.predict(image_array, verbose=0)[0]
-            pred_idx = int(np.argmax(predictions))
-            pred_class = CLASS_NAMES[pred_idx]
-            confidence = float(predictions[pred_idx] * 100)
+            top3_idx = np.argsort(predictions)[-3:][::-1]
+            top3 = [(CLASS_NAMES[i], float(predictions[i] * 100)) for i in top3_idx]
+
+        pred_class, confidence = top3[0]
 
         st.success(f"Prediksi: {pred_class}")
         st.metric("Confidence", f"{confidence:.2f}%")
+
+        st.subheader("Top-3 Prediksi")
+        for i, (class_name, score) in enumerate(top3, start=1):
+            st.write(f"{i}. {class_name}: {score:.2f}%")
+
+if st.button("Reset"):
+    st.rerun()
