@@ -54,7 +54,7 @@ uploaded_file = st.file_uploader("Pilih gambar", type=["jpg", "jpeg", "png", "bm
 
 if uploaded_file is not None:
     image, image_array = preprocess_image(uploaded_file)
-    st.image(np.array(image), caption="Gambar input", use_container_width=True)
+    st.write("Gambar berhasil diupload.")
 
     if st.button("Prediksi", type="primary"):
         with st.spinner("Memproses prediksi..."):
