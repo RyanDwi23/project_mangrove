@@ -34,10 +34,11 @@ def load_model():
 
 def preprocess_image(uploaded_file):
     img = Image.open(uploaded_file).convert("RGB")
+    display_img = img.copy()
     img_resized = img.resize(IMAGE_SIZE)
     img_array = np.array(img_resized, dtype=np.float32)
     img_array = np.expand_dims(img_array, axis=0)
-    return img, img_array
+    return display_img, img_array
 
 
 st.title("Klasifikasi Jenis Mangrove")
@@ -53,7 +54,7 @@ uploaded_file = st.file_uploader("Pilih gambar", type=["jpg", "jpeg", "png", "bm
 
 if uploaded_file is not None:
     image, image_array = preprocess_image(uploaded_file)
-    st.image(image, caption="Gambar input", use_container_width=True)
+    st.image(np.array(image), caption="Gambar input", use_container_width=True)
 
     if st.button("Prediksi", type="primary"):
         with st.spinner("Memproses prediksi..."):
