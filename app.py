@@ -77,6 +77,10 @@ uploaded_file = st.file_uploader(
 )
 
 if uploaded_file is not None:
+    file_bytes = uploaded_file.getvalue()
+    st.image(file_bytes, caption="Gambar input", use_column_width=True)
+
+    uploaded_file.seek(0)
     image_array = preprocess_image(uploaded_file)
     st.write("Gambar berhasil diupload.")
 
